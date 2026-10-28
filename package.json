@@ -1,0 +1,33 @@
+{
+  "name": "fonds-ai-test-automation-demo",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "api": "node server/index.js",
+    "build": "vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "start": "node server/index.js",
+    "test:e2e": "npm run build && node tests/run-demo.js --headless",
+    "test:demo": "npm run build && node tests/run-demo.js",
+    "test:report": "node tests/show-demo-report.js",
+    "demo:reset": "node server/reset-demo.js",
+    "xray:upload": "node tests/upload-xray.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.2.0",
+    "express": "^5.1.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "oxlint": "^1.89.0",
+    "vite": "^8.3.5"
+  }
+}
