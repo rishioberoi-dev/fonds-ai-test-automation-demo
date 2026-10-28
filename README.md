@@ -1,6 +1,6 @@
 # Folio Demo
 
-A local-only investment/depot dashboard for demonstrating reliable, AI-assisted Playwright testing. All products, identifiers, prices, balances and orders are synthetic. This application does not connect to financial services or execute real trades.
+A local-only investment/depot dashboard for demonstrating reliable Playwright UI/API test automation with deterministic test data, CI reporting and optional Xray integration. All products, identifiers, prices, balances and orders are synthetic. This application does not connect to financial services or execute real trades.
 
 ## Features
 
