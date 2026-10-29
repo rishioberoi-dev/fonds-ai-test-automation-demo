@@ -98,6 +98,8 @@ npm run test:report
 
 Open `http://localhost:9323` for the plain-language summary: scenarios executed, pass rate, run time, completed scenarios per minute, and each scenario's result and duration. Select **Open the detailed Playwright report** for Playwright's step-by-step trace. The report is replaced on the next run. Close the report server with `Ctrl+C` in its terminal when finished.
 
+Each completed run is also archived in `test-runs/<UTC timestamp>/`. The archive includes a readable `summary.html`, the detailed Playwright report, JSON and JUnit results, failure context and trace files (when generated), plus `run-info.json` with the run timestamp, mode and exit code. To view an archived report with its detailed-report link working, start `npm run test:report` and open `http://localhost:9323/runs/<UTC timestamp>/summary.html` (replace the placeholder with the folder name under `test-runs`). Archives are kept locally and ignored by Git; delete an individual run folder when it is no longer needed.
+
 For a faster, non-headed run that still updates both reports:
 
 ```sh

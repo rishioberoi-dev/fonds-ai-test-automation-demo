@@ -15,6 +15,7 @@ server/data/
 .playwright-data/
 playwright-report/
 test-results/
+test-runs/
 
 # Editor directories and files
 .vscode/*

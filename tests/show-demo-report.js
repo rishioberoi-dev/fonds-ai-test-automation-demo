@@ -6,11 +6,13 @@ import { fileURLToPath } from 'node:url'
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const summaryFile = path.join(root, 'playwright-report', 'demo-summary.html')
 const detailsDirectory = path.join(root, 'playwright-report')
+const archivesDirectory = path.join(root, 'test-runs')
 const contentTypes = {
   '.css': 'text/css; charset=utf-8',
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
+  '.xml': 'application/xml; charset=utf-8',
   '.png': 'image/png',
   '.svg': 'image/svg+xml',
   '.webmanifest': 'application/manifest+json',
@@ -27,6 +29,25 @@ http.createServer((request, response) => {
   if (url.pathname === '/' || url.pathname === '/index.html') {
     response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
     fs.createReadStream(summaryFile).pipe(response)
+    return
+  }
+
+  if (url.pathname.startsWith('/runs/')) {
+    const relativePath = decodeURIComponent(url.pathname.slice('/runs/'.length))
+    let filePath = path.resolve(archivesDirectory, relativePath)
+    if (!filePath.startsWith(`${archivesDirectory}${path.sep}`)) {
+      response.writeHead(403).end('Forbidden')
+      return
+    }
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
+      filePath = path.join(filePath, 'index.html')
+    }
+    if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+      response.writeHead(404).end('Archived report file not found')
+      return
+    }
+    response.writeHead(200, { 'Content-Type': contentTypes[path.extname(filePath)] || 'application/octet-stream' })
+    fs.createReadStream(filePath).pipe(response)
     return
   }
 

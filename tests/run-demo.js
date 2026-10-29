@@ -6,7 +6,10 @@ import { performance } from 'node:perf_hooks'
 const resultsPath = path.resolve('test-results/demo-results.json')
 const summaryPath = path.resolve('playwright-report/demo-summary.html')
 const start = performance.now()
-const startedAt = new Date().toLocaleString()
+const startedAtDate = new Date()
+const startedAt = startedAtDate.toLocaleString()
+const runId = startedAtDate.toISOString().replace(/[:.]/g, '-')
+const archivePath = path.resolve('test-runs', runId)
 const headless = process.argv.includes('--headless')
 
 console.log(headless
@@ -57,7 +60,7 @@ runner.on('exit', async (code, signal) => {
     const totalCaseSeconds = cases.reduce((total, item) => total + item.duration, 0)
 
     await fs.mkdir(path.dirname(summaryPath), { recursive: true })
-    await fs.writeFile(summaryPath, renderSummary({
+    const summary = {
       cases,
       counts,
       executed,
@@ -66,11 +69,27 @@ runner.on('exit', async (code, signal) => {
       commandSeconds,
       totalCaseSeconds,
       startedAt,
-    }))
+    }
+    await fs.writeFile(summaryPath, renderSummary(summary))
+    await fs.mkdir(path.dirname(archivePath), { recursive: true })
+    await fs.mkdir(archivePath, { recursive: false })
+    await Promise.all([
+      fs.cp(path.dirname(resultsPath), path.join(archivePath, 'test-results'), { recursive: true }),
+      fs.cp(path.dirname(summaryPath), path.join(archivePath, 'playwright-report'), { recursive: true }),
+    ])
+    await fs.writeFile(path.join(archivePath, 'summary.html'), renderSummary(summary, './playwright-report/'))
+    await fs.writeFile(path.join(archivePath, 'run-info.json'), `${JSON.stringify({
+      runId,
+      startedAt: startedAtDate.toISOString(),
+      durationSeconds: Number(commandSeconds.toFixed(1)),
+      headless,
+      exitCode: signal ? null : code,
+    }, null, 2)}\n`)
 
     console.log(`Results: ${counts.passed} passed, ${counts.failed} failed, ${counts.flaky} flaky, ${counts.skipped} skipped.`)
     console.log(`Throughput: ${casesPerMinute} test cases per minute across ${executed} executed scenarios.`)
     console.log('Human-readable report: run "npm run test:report".')
+    console.log(`Archived run: ${path.relative(process.cwd(), archivePath)}`)
   } catch (error) {
     console.error(`Could not create the human-readable report: ${error.message}`)
     process.exitCode = 1
@@ -116,7 +135,7 @@ function escapeHtml(value) {
   })[character])
 }
 
-function renderSummary(summary) {
+function renderSummary(summary, detailsHref = '/details/') {
   const { cases, counts, executed, passPercent, casesPerMinute, commandSeconds, totalCaseSeconds, startedAt } = summary
   const statusLabel = (item) => item.flaky ? 'Passed after retry' : item.status === 'passed' ? 'Passed' : item.status === 'skipped' ? 'Skipped' : 'Failed'
   const statusClass = (item) => item.flaky ? 'flaky' : item.status === 'passed' ? 'passed' : item.status === 'skipped' ? 'skipped' : 'failed'
@@ -171,7 +190,7 @@ function renderSummary(summary) {
       <div class="table-wrap"><table><thead><tr><th>#</th><th>Scenario</th><th>Result</th><th>Test time</th></tr></thead><tbody>${rows}</tbody></table></div>
     </section>
     <div class="note"><strong>How to read these numbers:</strong> “Scenarios per minute” is the number of completed test cases divided by the measured Playwright run time, excluding the build. It describes this run only; it is not a manual-vs-automation speed-up claim. The combined test time is the sum of individual scenario durations and may differ from wall-clock run time.</div>
-    <a class="details" href="/details/">Open the detailed Playwright report →</a>
+    <a class="details" href="${escapeHtml(detailsHref)}">Open the detailed Playwright report →</a>
     <div class="footer">Generated locally from Playwright results · ${executed} executed scenarios · ${counts.failed} failures</div>
   </main>
 </body>
