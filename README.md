@@ -80,6 +80,12 @@ Install the matching Chromium browser once:
 npx playwright install chromium
 ```
 
+### Optional AI-assisted test authoring in VS Code
+
+Requires VS Code 1.105 or newer with Copilot agent mode. If prompted, approve the workspace's local Playwright MCP server. Playwright's planner and generator agents are available through the VS Code Copilot agent picker. The planner can explore the Folio app and draft a focused test plan; after you review it, the generator can verify a scenario in the browser and create a JavaScript Playwright test. Start with the **Playwright Test Planner** agent or the `/playwright-test-plan` prompt, then review the saved plan before using the **Playwright Test Generator** agent or `/playwright-test-generate` prompt.
+
+This is an authoring aid, not AI-driven test execution: normal Playwright assertions still determine pass or fail, and generated tests should be reviewed and run with `npm run test:e2e` before relying on them. The seed test in `tests/seed.spec.ts` prepares the isolated synthetic test app. The normal `npm run test:e2e` and `npm run test:demo` commands exclude it, while the planner can run it when needed. No AI calls are made by either test command.
+
 ### Live demo run
 
 ```sh

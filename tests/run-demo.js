@@ -29,6 +29,8 @@ const runner = spawn(
     'test',
     ...(headless ? [] : ['--headed']),
     '--workers=1',
+    '--grep-invert',
+    '@seed',
   ],
   {
     env: runnerEnv,
